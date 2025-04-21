@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <title>Flappy Bird</title>
+  <link rel="stylesheet" href="flappy.css">
+</head>
+<body>
+  <h1>🐤 Flappy Bird</h1>
+  <canvas id="flappy" width="320" height="480"></canvas>
+
+  <script>
+    const canvas = document.getElementById('flappy');
+    const ctx = canvas.getContext('2d');
+
+    const birdImg = new Image();
+    birdImg.src = 'https://i.pinimg.com/originals/dd/b0/a4/ddb0a4f27b9be7ffedf03a872545a3e2.png';
+
+    const bird = {
+      x: 50,
+      y: 150,
+      width: 40,
+      height: 40,
+      gravity: 0.7,
+      lift: -10,
+      velocity: 0
+    };
+
+    const pipes = [];
+    const pipeWidth = 50;
+    const gap = 120;
+    let score = 0;
+    let frame = 0;
+    let gameOver = false;
+
+    function drawBird() {
+      ctx.drawImage(birdImg, bird.x, bird.y, bird.width, bird.height);
+    }
+
+    function drawPipes() {
+      ctx.fillStyle = "green";
+      pipes.forEach(pipe => {
+        ctx.fillRect(pipe.x, 0, pipeWidth, pipe.top);
+        ctx.fillRect(pipe.x, pipe.top + gap, pipeWidth, canvas.height);
+      });
+    }
+
+    function updatePipes() {
+      if (frame % 100 === 0) {
+        const top = Math.floor(Math.random() * 200) + 20;
+        pipes.push({ x: canvas.width, top: top });
+      }
+
+      pipes.forEach(pipe => {
+        pipe.x -= 2;
+
+        // Collision
+        if (
+          bird.x < pipe.x + pipeWidth &&
+          bird.x + bird.width > pipe.x &&
+          (bird.y < pipe.top || bird.y + bird.height > pipe.top + gap)
+        ) {
+          gameOver = true;
+        }
+
+        // Score
+        if (pipe.x + pipeWidth === bird.x) {
+          score++;
+        }
+      });
+
+      if (pipes.length && pipes[0].x + pipeWidth < 0) {
+        pipes.shift();
+      }
+    }
+
+    function updateBird() {
+      bird.velocity += bird.gravity;
+      bird.y += bird.velocity;
+
+      if (bird.y + bird.height >= canvas.height) {
+        gameOver = true;
+      }
+
+      if (bird.y < 0) {
+        bird.y = 0;
+        bird.velocity = 0;
+      }
+    }
+
+    function drawScore() {
+      ctx.fillStyle = "#fff";
+      ctx.font = "20px Arial";
+      ctx.fillText("Hisob: " + score, 10, 30);
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBird();
+      drawPipes();
+      drawScore();
+    }
+
+    function update() {
+      if (gameOver) {
+        alert("😢 O'yin tugadi! Hisob: " + score);
+        document.location.reload();
+        return;
+      }
+
+      updateBird();
+      updatePipes();
+      draw();
+      frame++;
+      requestAnimationFrame(update);
+    }
+
+    // Kompyuterda Space bilan
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        bird.velocity = bird.lift;
+      }
+    });
+
+    // Mobilda ekran bosilganda
+    canvas.addEventListener('touchstart', () => {
+      bird.velocity = bird.lift;
+    });
+
+    // Sichqoncha bosilganda (test uchun)
+    canvas.addEventListener('mousedown', () => {
+      bird.velocity = bird.lift;
+    });
+
+    birdImg.onload = () => {
+      update();
+    };
+  </script>
+</body>
+</html>

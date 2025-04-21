@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <title>Son Topish O‘yini</title>
+  <link rel="stylesheet" href="guess.css">
+</head>
+<body>
+  <div class="container">
+    <h1>🔢 Son Topish</h1>
+    <p>1 dan 100 gacha son o‘yladim. Topishga urining!</p>
+    <input type="number" id="guess" placeholder="Son kiriting" />
+    <button onclick="checkGuess()">Tekshirish</button>
+    <p id="result"></p>
+  </div>
+
+  <script>
+    let secret = Math.floor(Math.random() * 100) + 1;
+    let urinishlar = 0;
+
+    function checkGuess() {
+      const guess = parseInt(document.getElementById("guess").value);
+      urinishlar++;
+      if (guess === secret) {
+        document.getElementById("result").textContent =
+          `🎉 To‘g‘ri! ${urinishlar} urinishda topdingiz!`;
+      } else if (guess < secret) {
+        document.getElementById("result").textContent = "🔼 Yuqoriroq son kiriting!";
+      } else {
+        document.getElementById("result").textContent = "🔽 Pastroq son kiriting!";
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <title>Avoid the Blocks</title>
+  <link rel="stylesheet" href="avoid.css">
+  <style>
+    
+  </style>
+</head>
+<body>
+  <h1>🤖 Avoid The Blocks</h1>
+  <canvas id="gameCanvas" width="600" height="400"></canvas>
+
+  <!-- Mobil tugmalar -->
+  <div id="controls">
+    <button id="leftBtn">⬅️</button>
+    <button id="rightBtn">➡️</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const player = {
+      x: 300,
+      y: 350,
+      width: 40,
+      height: 40,
+      speed: 5,
+    };
+
+    let blocks = [];
+    let keys = {};
+    let score = 0;
+    let gameOver = false;
+    let blockSpeed = 2;
+
+    // Klaviatura boshqaruv
+    document.addEventListener("keydown", e => keys[e.key] = true);
+    document.addEventListener("keyup", e => keys[e.key] = false);
+
+    // Mobil boshqaruv holatlari
+    let moveLeft = false;
+    let moveRight = false;
+
+    document.getElementById("leftBtn").addEventListener("touchstart", () => moveLeft = true);
+    document.getElementById("leftBtn").addEventListener("touchend", () => moveLeft = false);
+    document.getElementById("rightBtn").addEventListener("touchstart", () => moveRight = true);
+    document.getElementById("rightBtn").addEventListener("touchend", () => moveRight = false);
+
+    // Kompyuterda sinash uchun (sichqoncha bosish)
+    document.getElementById("leftBtn").addEventListener("mousedown", () => moveLeft = true);
+    document.getElementById("leftBtn").addEventListener("mouseup", () => moveLeft = false);
+    document.getElementById("rightBtn").addEventListener("mousedown", () => moveRight = true);
+    document.getElementById("rightBtn").addEventListener("mouseup", () => moveRight = false);
+
+    function spawnBlock() {
+      const width = 40 + Math.random() * 40;
+      const x = Math.random() * (canvas.width - width);
+      blocks.push({ x, y: -50, width, height: 20 });
+    }
+
+    function update() {
+      if (gameOver) return;
+
+      // Mobil harakat
+      if (moveLeft) player.x -= player.speed;
+      if (moveRight) player.x += player.speed;
+
+      // Klaviatura harakat
+      if (keys["ArrowLeft"] || keys["a"]) player.x -= player.speed;
+      if (keys["ArrowRight"] || keys["d"]) player.x += player.speed;
+
+      // Chegaralar
+      if (player.x < 0) player.x = 0;
+      if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
+
+      // Bloklarni yangilash
+      for (let i = blocks.length - 1; i >= 0; i--) {
+        blocks[i].y += blockSpeed;
+
+        // Urildi
+        if (isColliding(player, blocks[i])) {
+          gameOver = true;
+          alert("Yutqazding! Ball: " + score);
+          document.location.reload();
+        }
+
+        // Ekrandan chiqib ketgan bo‘lsa
+        if (blocks[i].y > canvas.height) {
+          blocks.splice(i, 1);
+          score++;
+          if (score % 10 === 0) blockSpeed += 0.5;
+        }
+      }
+    }
+
+    function isColliding(a, b) {
+      return (
+        a.x < b.x + b.width &&
+        a.x + a.width > b.x &&
+        a.y < b.y + b.height &&
+        a.y + a.height > b.y
+      );
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // O‘yinchi
+      ctx.fillStyle = "#0f0";
+      ctx.fillRect(player.x, player.y, player.width, player.height);
+
+      // Bloklar
+      ctx.fillStyle = "#f00";
+      blocks.forEach(b => {
+        ctx.fillRect(b.x, b.y, b.width, b.height);
+      });
+
+      // Ball
+      ctx.fillStyle = "#fff";
+      ctx.font = "20px sans-serif";
+      ctx.fillText("Ball: " + score, 10, 30);
+    }
+
+    function gameLoop() {
+      update();
+      draw();
+      if (!gameOver) requestAnimationFrame(gameLoop);
+    }
+
+    setInterval(spawnBlock, 1000); // Har soniyada blok tushadi
+    gameLoop();
+  </script>
+</body>
+</html>
